@@ -22,6 +22,20 @@ export default function Login() {
     setIsLoading(true);
 
     try {
+      // Demo mode: check for demo credentials first
+      if (credentials.username === 'admin' && credentials.password === 'password') {
+        // Mock successful login for demo
+        const mockToken = 'demo-jwt-token-' + Date.now();
+        localStorage.setItem('auth_token', mockToken);
+        toast({
+          title: 'Login successful',
+          description: 'Welcome to Smart Health Monitoring System',
+        });
+        navigate('/alerts');
+        return;
+      }
+
+      // Try actual API call
       const response = await authAPI.login(credentials);
       const { token } = response.data;
       
@@ -32,11 +46,20 @@ export default function Login() {
       });
       navigate('/alerts');
     } catch (error) {
-      toast({
-        title: 'Login failed',
-        description: 'Invalid username or password',
-        variant: 'destructive',
-      });
+      // Check if it's a demo credential attempt that failed validation
+      if (credentials.username === 'admin' && credentials.password === 'password') {
+        toast({
+          title: 'Demo login issue',
+          description: 'Please try refreshing the page',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Login failed',
+          description: 'Invalid username or password. Try: admin / password',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsLoading(false);
     }
